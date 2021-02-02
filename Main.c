@@ -1,17 +1,20 @@
 
 #define F_CPU 16000000UL
-
 #include <avr/io.h>
 #include <util/delay.h>
 #include "lcd_api.h"
+#include "pin_def.h"
 
-#define FUNCTION_SET 0b00110000
-#define FUNCTION_SET_4_BIT 0b00101000
-#define DISPLAY_ON  0b00001111
-#define DISPLAY_ON_C  0b00001110
-#define DISPLAY_ON_NC  0b00001100
-#define DISPLAY_OFF 0b00001000
-#define CLEAR_DISPLAY 0b00000001
+
+
+#define FUNCTION_SET 		0b00110000
+#define FUNCTION_SET_4_BIT 	0b00101000
+#define DISPLAY_ON  		0b00001111
+#define DISPLAY_ON_C  		0b00001110
+#define DISPLAY_ON_NC  		0b00001100
+#define DISPLAY_OFF 		0b00001000
+#define CLEAR_DISPLAY 		0b00000001
+
 
 void pin_setup(void);
 
@@ -25,11 +28,16 @@ void enable_pulse(void);
 
 void send_ins(unsigned char chr);
 
+void setup();
+
 int main(void)
 {
-	pin_setup();
-	power_setup();
+	setup();
 
+
+	//pin_setup();
+	//power_setup();
+	/*
 	send_ins(DISPLAY_OFF);
 	send_ins(DISPLAY_ON_C);
 	send_char('g');
@@ -40,11 +48,45 @@ int main(void)
 	send_char('a');
 	//_delay_ms(9000);
 	//send_ins(CLEAR_DISPLAY);
-
+	*/
 
 
 	while(1);
 	return 0;
+}
+
+void setup()
+{
+
+	LCDSettings myLCDSettings;
+	myLCDSettings.insType = 0;
+	myLCDSettings.lineAmt = 1;
+	myLCDSettings.dotDimension = 0;
+	myLCDSettings.cursorSet = 1;
+	myLCDSettings.blinkSet = 1;
+
+	createInstructions(&myLCDSettings);
+	configurePin(IGNORE, IGNORE, IGNORE, IGNORE, PIN_D4, PIN_D5, PIN_D6, PIN_D7, PIN_B0, IGNORE, PIN_B1);
+
+	_delay_ms(16);
+	_insMode();
+
+	_send4bits(FUNCTION_SET);
+	_delay_ms(5);
+
+	_send4bits(FUNCTION_SET);
+	_delay_ms(5);
+
+	_send4bits(FUNCTION_SET);
+	_delay_ms(5);
+
+	_send4bits(FUNCTION_SET_4_BIT);
+	_delay_ms(5);
+
+	_insMode();
+	_send4bits(FUNCTION_SET_4_BIT);
+	_send4bits(0b00101000 << 4);
+	_delay_ms(5);
 }
 
 void pin_setup(void)
@@ -128,3 +170,4 @@ void enable_pulse(void)
 	PORTB &= ~(1 << 1);
 	_delay_ms(101);
 }
+
